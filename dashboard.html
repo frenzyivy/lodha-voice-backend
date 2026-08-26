@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lodha Calling Bot - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: #2d2d44;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border-left: 5px solid #4a7c9e;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #b0b0b0;
+            font-size: 1.1em;
+        }
+
+        .status {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .status.offline {
+            background: #ef4444;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #2d2d44;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border-left: 4px solid #4a7c9e;
+        }
+
+        .stat-card.hot {
+            border-left-color: #ef4444;
+        }
+
+        .stat-card.warm {
+            border-left-color: #f59e0b;
+        }
+
+        .stat-card.cold {
+            border-left-color: #3b82f6;
+        }
+
+        .stat-label {
+            color: #9ca3af;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .stat-subtitle {
+            color: #6b7280;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: #2d2d44;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        canvas {
+            max-height: 300px;
+        }
+
+        /* Recent Calls Table */
+        .section {
+            background: #2d2d44;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #1f1f2e;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            color: #9ca3af;
+            font-weight: 600;
+            border-bottom: 2px solid #404053;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #404053;
+            color: #e5e7eb;
+        }
+
+        tr:hover {
+            background: #373748;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .badge.hot {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        .badge.warm {
+            background: #78350f;
+            color: #fcd34d;
+        }
+
+        .badge.cold {
+            background: #1e3a8a;
+            color: #93c5fd;
+        }
+
+        .phone {
+            font-family: monospace;
+            color: #60a5fa;
+        }
+
+        /* Leads Section */
+        .lead-card {
+            border: 1px solid #404053;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #373748;
+        }
+
+        .lead-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .lead-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #ffffff;
+        }
+
+        .lead-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            font-size: 0.9em;
+            color: #d1d5db;
+        }
+
+        .lead-detail {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: #9ca3af;
+            margin-top: 40px;
+            padding: 20px;
+        }
+
+        .footer p {
+            font-size: 0.9em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+
+        .spinner {
+            border: 4px solid #404053;
+            border-top: 4px solid #4a7c9e;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: #4a7c9e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #3d6481;
+        }
+
+        button.secondary {
+            background: #5a5a7a;
+        }
+
+        button.secondary:hover {
+            background: #484860;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Lodha Calling Bot Dashboard</h1>
+            <p>Real-time monitoring and analytics</p>
+            <span class="status" id="status">Online</span>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Calls</div>
+                <div class="stat-number" id="totalCalls">0</div>
+                <div class="stat-subtitle">All time</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Leads Captured</div>
+                <div class="stat-number" id="totalLeads">0</div>
+                <div class="stat-subtitle">Unique customers</div>
+            </div>
+
+            <div class="stat-card hot">
+                <div class="stat-label">Hot Leads</div>
+                <div class="stat-number" id="hotLeads">0</div>
+                <div class="stat-subtitle">Immediate followup</div>
+            </div>
+
+            <div class="stat-card warm">
+                <div class="stat-label">Warm Leads</div>
+                <div class="stat-number" id="warmLeads">0</div>
+                <div class="stat-subtitle">Interested</div>
+            </div>
+
+            <div class="stat-card cold">
+                <div class="stat-label">Cold Leads</div>
+                <div class="stat-number" id="coldLeads">0</div>
+                <div class="stat-subtitle">Future potential</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Avg Call Duration</div>
+                <div class="stat-number" id="avgDuration">0</div>
+                <div class="stat-subtitle">seconds</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-section">
+            <div class="chart-container">
+                <div class="chart-title">Lead Quality Distribution</div>
+                <canvas id="qualityChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Calls Per Hour (Today)</div>
+                <canvas id="callsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Calls -->
+        <div class="section">
+            <div class="section-title">Recent Calls</div>
+            <div class="controls">
+                <button onclick="loadRecentCalls()">Refresh</button>
+                <button class="secondary" onclick="downloadCSV()">Download CSV</button>
+            </div>
+            <div id="recentCallsContainer" class="loading">
+                <span class="spinner"></span> Loading calls...
+            </div>
+        </div>
+
+        <!-- Recent Leads -->
+        <div class="section">
+            <div class="section-title">Recent Leads</div>
+            <div class="controls">
+                <button onclick="loadRecentLeads()">Refresh</button>
+            </div>
+            <div id="recentLeadsContainer" class="loading">
+                <span class="spinner"></span> Loading leads...
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Lodha Calling Bot v1.0 | Last updated: <span id="lastUpdate">--:--:--</span></p>
+    </div>
+
+    <script>
+        let mockData = {
+    calls: [],
+    leads: []
+};
+
+// Fetch real data from backend
+async function loadData() {
+    try {
+        const callsResponse = await fetch('http://127.0.0.1:8000/api/calls');
+        const callsData = await callsResponse.json();
+        mockData.calls = callsData.calls || [];
+
+        const leadsResponse = await fetch('http://127.0.0.1:8000/api/leads');
+        const leadsData = await leadsResponse.json();
+        mockData.leads = leadsData.leads || [];
+
+        console.log('Data loaded:', mockData);
+    } catch (error) {
+        console.error('Error loading data:', error);
+    }
+}
+
+// Auto-refresh every 30 seconds
+setInterval(loadData, 30000);
+
+        // Calculate stats
+        function calculateStats() {
+            const calls = mockData.calls;
+            const leads = mockData.leads;
+
+            const totalCalls = calls.length;
+            const totalLeads = leads.length;
+            const hotLeads = leads.filter(l => l.quality === 'Hot').length;
+            const warmLeads = leads.filter(l => l.quality === 'Warm').length;
+            const coldLeads = leads.filter(l => l.quality === 'Cold').length;
+            const avgDuration = Math.round(calls.reduce((sum, c) => sum + c.duration, 0) / calls.length);
+
+            document.getElementById('totalCalls').textContent = totalCalls;
+            document.getElementById('totalLeads').textContent = totalLeads;
+            document.getElementById('hotLeads').textContent = hotLeads;
+            document.getElementById('warmLeads').textContent = warmLeads;
+            document.getElementById('coldLeads').textContent = coldLeads;
+            document.getElementById('avgDuration').textContent = avgDuration;
+
+            updateCharts();
+        }
+
+        // Update Charts
+        function updateCharts() {
+            const leads = mockData.leads;
+            const hotCount = leads.filter(l => l.quality === 'Hot').length;
+            const warmCount = leads.filter(l => l.quality === 'Warm').length;
+            const coldCount = leads.filter(l => l.quality === 'Cold').length;
+
+            // Quality Chart
+            const qualityCtx = document.getElementById('qualityChart').getContext('2d');
+            new Chart(qualityCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Hot', 'Warm', 'Cold'],
+                    datasets: [{
+                        data: [hotCount, warmCount, coldCount],
+                        backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6'],
+                        borderColor: '#2d2d44',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 12 },
+                                padding: 15,
+                                color: '#e5e7eb'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Calls Chart
+            const callsCtx = document.getElementById('callsChart').getContext('2d');
+            new Chart(callsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM'],
+                    datasets: [{
+                        label: 'Calls',
+                        data: [5, 8, 12, 10, 15, 9, 7],
+                        borderColor: '#4a7c9e',
+                        backgroundColor: 'rgba(74, 124, 158, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#4a7c9e',
+                        pointBorderColor: '#2d2d44',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 20,
+                            ticks: {
+                                color: '#9ca3af'
+                            },
+                            grid: {
+                                color: '#404053'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#9ca3af'
+                            },
+                            grid: {
+                                color: '#404053'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load Recent Calls
+        function loadRecentCalls() {
+            const html = mockData.calls.map(call => `
+                <tr>
+                    <td>${call.timestamp}</td>
+                    <td><span class="phone">${call.phone}</span></td>
+                    <td>${call.project}</td>
+                    <td><span class="badge ${call.quality.toLowerCase()}">${call.quality}</span></td>
+                    <td>${call.duration}s</td>
+                    <td>${call.id}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('recentCallsContainer').innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Phone</th>
+                            <th>Project</th>
+                            <th>Quality</th>
+                            <th>Duration</th>
+                            <th>Call ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${html}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Load Recent Leads
+        function loadRecentLeads() {
+            const html = mockData.leads.map(lead => `
+                <div class="lead-card">
+                    <div class="lead-header">
+                        <span class="lead-name">${lead.name}</span>
+                        <span class="badge ${lead.quality.toLowerCase()}">${lead.quality}</span>
+                    </div>
+                    <div class="lead-details">
+                        <div class="lead-detail">
+                            <strong>Phone:</strong>
+                            <span class="phone">${lead.phone}</span>
+                        </div>
+                        <div class="lead-detail">
+                            <strong>Projects:</strong>
+                            <span>${lead.projects}</span>
+                        </div>
+                        <div class="lead-detail">
+                            <strong>Budget:</strong>
+                            <span>${lead.budget}</span>
+                        </div>
+                        <div class="lead-detail">
+                            <strong>Last Call:</strong>
+                            <span>${lead.lastCall}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('recentLeadsContainer').innerHTML = html;
+        }
+
+        // Download CSV
+        function downloadCSV() {
+            let csv = 'Time,Phone,Project,Quality,Duration\n';
+            mockData.calls.forEach(call => {
+                csv += `"${call.timestamp}","${call.phone}","${call.project}","${call.quality}",${call.duration}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'lodha-calls.csv';
+            a.click();
+        }
+
+        // Update last update time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
+        }
+
+        // Initialize
+        window.addEventListener('load', async () => {
+    await loadData();
+    calculateStats();
+    loadRecentCalls();
+    loadRecentLeads();
+    updateTime();
+    setInterval(updateTime, 1000);
+});
+    </script>
+</body>
+</html>

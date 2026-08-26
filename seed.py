@@ -1,8 +1,4 @@
-"""
-Run once to seed the 5 projects: python seed.py
-Replace every value below with your real project data before going live —
-the `name` field must exactly match whatever you use in the Vapi system prompt.
-"""
+
 from app.database import Base, engine, SessionLocal
 from app import models
 
@@ -11,13 +7,13 @@ db = SessionLocal()
 
 PROJECTS = [
     dict(
-        name="Lodha Marq",                 # TODO: real name
-        location="Tardeo, Mumbai",                 # TODO
-        price_min=15000000, price_max=25000000,   # TODO (INR)
-        configurations="2, 3 BHK",                 # TODO
-        possession_date="Dec 2027",                 # TODO
-        rera_number="P51700000001",                 # TODO
-        amenities="Clubhouse, swimming pool, gym, landscaped gardens",  # TODO
+        name="Lodha Marq",                 
+        location="Tardeo, Mumbai",                 
+        price_min=15000000, price_max=25000000,   
+        configurations="2, 3 BHK",                 
+        possession_date="Dec 2027",                 
+        rera_number="P51700000001",                 
+        amenities="Clubhouse, swimming pool, gym, landscaped gardens",  
         description="Placeholder description.",
     ),
     dict(
